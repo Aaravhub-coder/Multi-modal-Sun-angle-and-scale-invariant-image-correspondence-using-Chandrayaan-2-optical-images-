@@ -1,0 +1,2 @@
+# Multi-modal-Sun-angle-and-scale-invariant-image-correspondence-using-Chandrayaan-2-optical-images-
+Lunar image registration aligns Chandrayaan-2 optical images with reference lunar images despite illumination, viewpoint, and scale variations. The proposed software will detect uniformly distributed matching points and achieve sub-pixel accuracy. Performance will be evaluated using RMSE, inlier count, inlier ratio, and registration accuracy.
