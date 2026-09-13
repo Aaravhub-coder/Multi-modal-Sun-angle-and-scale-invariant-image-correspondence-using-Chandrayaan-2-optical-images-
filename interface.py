@@ -1,36 +1,37 @@
-### THIS FILE CONTAINS THE UI INTERFACE FOR THE PROJECT. IT IS RESPONSIBLE FOR HANDLING USER INPUT AND DISPLAYING OUTPUT. ###
 """
 Minimal interface with two buttons: "Source Image" and "Reference".
 Clicking either button opens the OS file manager (native file dialog)
-so the user can pick a file. The chosen paths are stored in
-`source_image_path` and `reference_path` and printed to the console,
-ready to be used as input elsewhere in your program.
+so the user can pick a file.
 
-Requires: pygame  (pip install pygame)
+This module is meant to be IMPORTED from main.py. Call get_input_paths()
+to open the window; it blocks until the user has picked both files and
+clicked "Continue" (or closes the window early), then returns the two
+paths as a tuple: (source_image_path, reference_path). Either value can
+be None if the window was closed before that file was selected.
+
+Requires: pygame (or pygame-ce on Python 3.14+) -> pip install pygame
 tkinter is used only for the native "Open File" dialog and is part of
 the Python standard library on most installations.
 """
 
 import pygame
-import sys
 import os
 from tkinter import Tk, filedialog
 
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
-WIDTH, HEIGHT = 480, 260
+WIDTH, HEIGHT = 480, 300
 BG_COLOR = (30, 30, 30)
 BUTTON_COLOR = (60, 60, 60)
 BUTTON_HOVER_COLOR = (90, 90, 90)
+CONTINUE_COLOR = (40, 110, 60)
+CONTINUE_HOVER_COLOR = (55, 140, 80)
+CONTINUE_DISABLED_COLOR = (50, 50, 50)
 TEXT_COLOR = (255, 255, 255)
+TEXT_DISABLED_COLOR = (120, 120, 120)
 PATH_TEXT_COLOR = (150, 220, 150)
 FONT_NAME = None  # default pygame font
-
-# These will hold the file paths chosen by the user.
-# Use them anywhere else in your program.
-source_image_path = None
-reference_path = None
 
 
 # ---------------------------------------------------------------------------
@@ -77,10 +78,19 @@ class Button:
 
 
 # ---------------------------------------------------------------------------
-# Main
+# Public function - call this from main.py
 # ---------------------------------------------------------------------------
-def main():
-    global source_image_path, reference_path
+def get_input_paths():
+    """
+    Opens the picker window and blocks until the user clicks "Continue"
+    (enabled only once both files are chosen) or closes the window.
+
+    Returns:
+        (source_image_path, reference_path) tuple of strings, or None
+        for whichever one wasn't selected if the window was closed early.
+    """
+    source_image_path = None
+    reference_path = None
 
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -98,6 +108,7 @@ def main():
 
     source_button = Button((start_x, y, button_width, button_height), "Source Image")
     reference_button = Button((start_x + button_width + gap, y, button_width, button_height), "Reference")
+    continue_button = Button((start_x, 220, total_width, 50), "Continue")
 
     running = True
     while running:
@@ -110,8 +121,11 @@ def main():
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 mouse_clicked = True
 
+        ready = source_image_path is not None and reference_path is not None
+
         source_button.update_hover(mouse_pos)
         reference_button.update_hover(mouse_pos)
+        continue_button.update_hover(mouse_pos)
 
         if source_button.is_clicked(mouse_pos, mouse_clicked):
             path = open_file_dialog(title="Select Source Image")
@@ -124,6 +138,9 @@ def main():
             if path:
                 reference_path = path
                 print(f"[Reference] selected: {reference_path}")
+
+        if ready and continue_button.is_clicked(mouse_pos, mouse_clicked):
+            running = False
 
         # -------------------- Draw --------------------
         screen.fill(BG_COLOR)
@@ -141,19 +158,24 @@ def main():
         screen.blit(src_surf, (20, 160))
         screen.blit(ref_surf, (20, 190))
 
+        # Draw continue button (dimmed/disabled until both files chosen)
+        color = (CONTINUE_HOVER_COLOR if continue_button.hovered else CONTINUE_COLOR) if ready else CONTINUE_DISABLED_COLOR
+        text_color = TEXT_COLOR if ready else TEXT_DISABLED_COLOR
+        pygame.draw.rect(screen, color, continue_button.rect, border_radius=8)
+        pygame.draw.rect(screen, (120, 120, 120), continue_button.rect, width=2, border_radius=8)
+        text_surf = font.render("Continue", True, text_color)
+        text_rect = text_surf.get_rect(center=continue_button.rect.center)
+        screen.blit(text_surf, text_rect)
+
         pygame.display.flip()
         clock.tick(30)
 
     pygame.quit()
-
-    # -------------------- Use the paths here --------------------
-    print("\nFinal selections:")
-    print("Source image path:", source_image_path)
-    print("Reference path:", reference_path)
-
-    # e.g. pass them on to the rest of your program:
-    # run_my_program(source_image_path, reference_path)
+    return source_image_path, reference_path
 
 
-if __name__ == "__main__":
-    main()
+# Quick standalone test: just prints what was picked.
+src, ref = get_input_paths()
+print("\nFinal selections:")
+print("Source image path:", src)
+print("Reference path:", ref)
