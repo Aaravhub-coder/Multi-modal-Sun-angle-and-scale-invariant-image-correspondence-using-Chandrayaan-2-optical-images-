@@ -1,11 +1,5 @@
 """
 Preprocessing (step 1 of the pipeline).
-
-Goal: make a source and a reference that come from different sensors / sun
-angles / units look comparable, so feature detection works on both.
-
-  1. robust normalization   -> everything becomes float 0..1 (units disappear)
-  2. local contrast (CLAHE) -> dark, low-sun images show their structure
 """
 import os
 

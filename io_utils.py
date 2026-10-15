@@ -1,6 +1,6 @@
-"""
-Loading images + metadata. Everything downstream works with the Img container.
-"""
+
+### Loading images + metadata. Everything downstream works with the Img container.
+
 import os
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field

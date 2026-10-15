@@ -2,7 +2,7 @@
 Baseline registration: SIFT + ratio test + RANSAC similarity transform.
 
 This is the reference pipeline. Later, the paper's modules (WSGGF scale space,
-MGLOH, FSC, ...) replace stages one at a time and are compared against it.
+MGLOH, FSC, ...) replace stages one at a time and will be compared against it.
 """
 import csv
 import json
